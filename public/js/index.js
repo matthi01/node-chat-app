@@ -1,6 +1,24 @@
 
 let socket = io(); // initiate request from client to server to open up a web socket and keep connection open
 
+// auto scroll - make sure to only scroll to the bottom if user is already viewing the last message (vs checking out the history of messages)
+const scrollToBottom = () => {
+    // selectors
+    const messages = jQuery('#messages');
+    const newMessage = messages.children('li:last-child');
+
+    // heights
+    const clientHeight = messages.prop('clientHeight');
+    const scrollTop = messages.prop('scrollTop');
+    const scrollHeight = messages.prop('scrollHeight');
+    const newMessageHeight = newMessage.innerHeight();
+    const lastMessageHeight = newMessage.prev().innerHeight();
+
+    if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+        messages.scrollTop(scrollHeight);
+    }
+}
+
 socket.on('connect', () => {
     console.log('Connected to server');
 });
@@ -9,24 +27,30 @@ socket.on('connect', () => {
 // LISTENER - NEW MESSAGE
 socket.on('newMessage', (message) => {
     let formattedTime = moment(message.createdAt).format('h:mm a');
-    let li = jQuery('<li></li>');
-    li.text(`${message.from} ${formattedTime}: ${message.text}`);
+    let template = jQuery('#message-template').html();
+    let html = Mustache.render(template, {
+        text: message.text,
+        from: message.from,
+        createdAt: formattedTime
+    });
 
-    jQuery('#messages').append(li);
+    jQuery('#messages').append(html);
+    scrollToBottom();
 });
 
 
 // LISTENER - NEW LOCATION MESSAGE
 socket.on('newLocationMessage', (message) => {
     let formattedTime = moment(message.createdAt).format('h:mm a');
-    let li = jQuery('<li></li>');
-    let a = jQuery('<a target="_blank">My current location</a>');
+    let template = jQuery('#location-message-template').html();
+    let html = Mustache.render(template, {
+        from: message.from,
+        createdAt: formattedTime,
+        url: message.url
+    });
 
-    li.text(`${message.from} ${formattedTime}: `);
-    a.attr('href', message.url);
-
-    li.append(a);
-    jQuery('#messages').append(li);
+    jQuery('#messages').append(html);
+    scrollToBottom();
 });
 
 socket.on('disconnect', () => {
