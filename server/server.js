@@ -27,7 +27,7 @@ io.on('connection', (socket) => {
         console.log('created message: ', message);
         // io.emit() emits to all connections, whereas socket.emit() emits to a single connection
         io.emit('newMessage', generateMessage(message.from, message.text));
-        callback('This is from the server') // acknowledgement
+        callback() // acknowledgement
     });
 
     socket.on('createLocationMessage', (coords) => {
