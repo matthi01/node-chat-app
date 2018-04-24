@@ -68,6 +68,19 @@ socket.on('disconnect', () => {
 });
 
 
+// USER LIST
+socket.on('updateUserList', (users) => {
+    console.log('users list', users);
+    let ol = jQuery('<ol></ol>');
+
+    users.forEach((user) => {
+        ol.append(jQuery('<li></li>').text(user));
+    });
+
+    jQuery('#users').html(ol);
+});
+
+
 //SUBMIT BUTTON
 jQuery('#message-form').on('submit', (e) => {
     e.preventDefault();
